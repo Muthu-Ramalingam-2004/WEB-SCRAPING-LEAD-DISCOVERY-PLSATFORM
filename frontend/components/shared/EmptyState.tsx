@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon, Search, Database, Download, Plus } from 'lucide-react';
+import { LucideIcon, Search, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 interface EmptyStateProps {
@@ -20,12 +20,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-subtle my-6">
-      <div className="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 ring-8 ring-teal-50/50">
+    <div className="flex flex-col items-center justify-center p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-subtle my-6">
+      <div className="w-14 h-14 bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center mb-4 ring-8 ring-teal-50/50 dark:ring-teal-950/30">
         <Icon className="w-7 h-7" />
       </div>
-      <h3 className="text-lg font-bold text-slate-900 mb-1">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">{description}</p>
+      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{title}</h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">{description}</p>
       
       {actionLabel && actionHref && (
         <Link

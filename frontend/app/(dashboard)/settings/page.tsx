@@ -8,7 +8,6 @@ import {
   Bell,
   Camera,
   Save,
-  Globe,
   Clock,
   RotateCcw,
   Gauge,
@@ -54,14 +53,14 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">Manage your account and configure scraping preferences.</p>
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Settings</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account and configure scraping preferences.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Tab Navigation */}
         <nav className="md:w-56 shrink-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-subtle p-2 space-y-1">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-subtle p-2 space-y-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -70,11 +69,11 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.key)}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                     activeTab === tab.key
-                      ? 'bg-teal-50 text-teal-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${activeTab === tab.key ? 'text-teal-600' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${activeTab === tab.key ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500'}`} />
                   {tab.label}
                 </button>
               );
@@ -83,13 +82,13 @@ export default function SettingsPage() {
         </nav>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
           {/* Profile */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1">Profile</h2>
-                <p className="text-xs text-slate-500">Manage your account information.</p>
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-1">Profile</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Manage your account information.</p>
               </div>
 
               {/* Avatar */}
@@ -97,28 +96,28 @@ export default function SettingsPage() {
                 <div className="w-16 h-16 rounded-full bg-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-md">
                   MR
                 </div>
-                <button className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                <button className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
                   <Camera className="w-3.5 h-3.5" /> Change Photo
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Full Name</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Full Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Email Address</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Email Address</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   />
                 </div>
               </div>
@@ -136,46 +135,46 @@ export default function SettingsPage() {
           {activeTab === 'scraping' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1">Scraping Defaults</h2>
-                <p className="text-xs text-slate-500">Set default values for new scraping tasks. You can override these per task.</p>
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-1">Scraping Defaults</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Set default values for new scraping tasks. You can override these per task.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Default Max Results</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Default Max Results</label>
                   <input
                     type="number"
                     value={defaultMaxResults}
                     onChange={(e) => setDefaultMaxResults(parseInt(e.target.value) || 0)}
                     min={1}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">Maximum leads to discover per task</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Maximum leads to discover per task</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Default Pages / Site</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Default Pages / Site</label>
                   <input
                     type="number"
                     value={defaultMaxPages}
                     onChange={(e) => setDefaultMaxPages(parseInt(e.target.value) || 0)}
                     min={1}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">How many pages to check per website</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">How many pages to check per website</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Default Crawl Depth</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Default Crawl Depth</label>
                   <select
                     value={defaultCrawlDepth}
                     onChange={(e) => setDefaultCrawlDepth(parseInt(e.target.value))}
-                    className="w-full appearance-none px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full appearance-none px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   >
                     <option value={1}>1 — Surface</option>
                     <option value={2}>2 — Recommended</option>
                     <option value={3}>3 — Deep</option>
                     <option value={4}>4 — Very deep</option>
                   </select>
-                  <p className="text-[11px] text-slate-400 mt-1">How deep to follow links from a page</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">How deep to follow links from a page</p>
                 </div>
               </div>
 
@@ -192,14 +191,14 @@ export default function SettingsPage() {
           {activeTab === 'crawling' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1">Responsible Crawling</h2>
-                <p className="text-xs text-slate-500">Configure how the crawler interacts with websites. These settings help ensure responsible behavior.</p>
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-1">Responsible Crawling</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Configure how the crawler interacts with websites. These settings help ensure responsible behavior.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-400" /> Request Timeout
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" /> Request Timeout
                   </label>
                   <div className="relative">
                     <input
@@ -208,15 +207,15 @@ export default function SettingsPage() {
                       onChange={(e) => setRequestTimeout(parseInt(e.target.value) || 0)}
                       min={5}
                       max={120}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-16"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-16"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">seconds</span>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500 font-semibold">seconds</span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">How long to wait before timing out a page</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">How long to wait before timing out a page</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                    <RotateCcw className="w-3 h-3 text-slate-400" /> Retry Limit
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                    <RotateCcw className="w-3 h-3 text-slate-400 dark:text-slate-500" /> Retry Limit
                   </label>
                   <input
                     type="number"
@@ -224,13 +223,13 @@ export default function SettingsPage() {
                     onChange={(e) => setRetryLimit(parseInt(e.target.value) || 0)}
                     min={0}
                     max={10}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">Number of retries before skipping a page</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Number of retries before skipping a page</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                    <Gauge className="w-3 h-3 text-slate-400" /> Domain Rate Limit
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                    <Gauge className="w-3 h-3 text-slate-400 dark:text-slate-500" /> Domain Rate Limit
                   </label>
                   <div className="relative">
                     <input
@@ -239,11 +238,11 @@ export default function SettingsPage() {
                       onChange={(e) => setDomainRateLimit(parseInt(e.target.value) || 0)}
                       min={1}
                       max={30}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-20"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-20"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">sec/req</span>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500 font-semibold">sec/req</span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Minimum seconds between requests to the same domain</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Minimum seconds between requests to the same domain</p>
                 </div>
               </div>
 
@@ -260,8 +259,8 @@ export default function SettingsPage() {
           {activeTab === 'notifications' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-base font-extrabold text-slate-900 mb-1">Notifications</h2>
-                <p className="text-xs text-slate-500">Choose what notifications you want to receive.</p>
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-1">Notifications</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Choose what notifications you want to receive.</p>
               </div>
 
               <div className="space-y-4">
@@ -311,16 +310,16 @@ function NotificationToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors border border-slate-100">
+    <label className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-100 dark:border-slate-800">
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="w-5 h-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500/20 mt-0.5 cursor-pointer"
+        className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 text-teal-600 focus:ring-teal-500/20 mt-0.5 cursor-pointer"
       />
       <div>
-        <p className="text-sm font-bold text-slate-800">{label}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{label}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
       </div>
     </label>
   );

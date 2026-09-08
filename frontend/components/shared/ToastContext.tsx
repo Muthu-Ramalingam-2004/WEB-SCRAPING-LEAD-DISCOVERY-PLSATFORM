@@ -43,28 +43,28 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start p-4 rounded-xl shadow-floating border bg-white transition-all transform duration-300 animate-in slide-in-from-bottom-5 ${
+            className={`pointer-events-auto flex items-start p-4 rounded-xl shadow-floating border bg-white dark:bg-slate-900 transition-all transform duration-300 animate-in slide-in-from-bottom-5 ${
               toast.type === 'success'
-                ? 'border-emerald-200 text-slate-800'
+                ? 'border-emerald-200 dark:border-emerald-800 text-slate-800 dark:text-slate-100'
                 : toast.type === 'error'
-                ? 'border-rose-200 text-slate-800'
-                : 'border-blue-200 text-slate-800'
+                ? 'border-rose-200 dark:border-rose-800 text-slate-800 dark:text-slate-100'
+                : 'border-blue-200 dark:border-blue-800 text-slate-800 dark:text-slate-100'
             }`}
           >
             <div className="mr-3 mt-0.5 shrink-0">
-              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-              {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-600" />}
-              {toast.type === 'info' && <Info className="w-5 h-5 text-teal-600" />}
+              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+              {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />}
+              {toast.type === 'info' && <Info className="w-5 h-5 text-teal-600 dark:text-teal-400" />}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-900">{toast.title}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{toast.title}</p>
               {toast.description && (
-                <p className="text-xs text-slate-600 mt-0.5">{toast.description}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{toast.description}</p>
               )}
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-md transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

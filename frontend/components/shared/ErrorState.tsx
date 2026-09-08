@@ -14,18 +14,18 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-10 text-center bg-white rounded-2xl border border-rose-100 shadow-subtle my-6">
-      <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 ring-8 ring-rose-50/50">
+    <div className="flex flex-col items-center justify-center p-10 text-center bg-white dark:bg-slate-900 rounded-2xl border border-rose-100 dark:border-rose-950/60 shadow-subtle my-6">
+      <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mb-4 ring-8 ring-rose-50/50 dark:ring-rose-950/30">
         <AlertCircle className="w-7 h-7" />
       </div>
-      <h3 className="text-lg font-bold text-slate-900 mb-1">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">{message}</p>
+      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{title}</h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">{message}</p>
 
       <div className="flex items-center gap-3">
         {onRetry && (
           <button
             onClick={onRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 font-semibold text-sm rounded-xl transition-all shadow-sm"
           >
             <RefreshCw className="w-4 h-4" />
             Retry
@@ -33,7 +33,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         )}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm rounded-xl transition-colors"
         >
           <LayoutDashboard className="w-4 h-4" />
           Go to Dashboard

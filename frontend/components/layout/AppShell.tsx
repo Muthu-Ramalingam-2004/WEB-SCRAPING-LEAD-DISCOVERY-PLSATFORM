@@ -9,7 +9,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased font-sans flex flex-col transition-colors duration-150">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar
@@ -22,10 +22,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative w-64 max-w-full bg-white h-full z-10 shadow-2xl">
+          <div className="relative w-64 max-w-full bg-white dark:bg-slate-900 h-full z-10 shadow-2xl">
             <Sidebar
               collapsed={false}
               onToggleCollapse={() => setMobileOpen(false)}

@@ -19,7 +19,6 @@ import {
   Info,
   Sparkles,
   ArrowRight,
-  X,
   CheckCircle2,
   ChevronDown,
 } from 'lucide-react';
@@ -100,64 +99,64 @@ function CreateTaskFormContent() {
     <div className="space-y-8 max-w-4xl">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Create Scraping Task</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Create Scraping Task</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Tell us where to search and what you&apos;re looking for.
         </p>
       </div>
 
       {/* SECTION 1: Search Intent */}
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
         <div className="flex items-center gap-2 mb-1">
-          <Search className="w-5 h-5 text-teal-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Search Intent</h2>
+          <Search className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100">Search Intent</h2>
         </div>
-        <p className="text-xs text-slate-500 mb-6">Define where you want to search and what type of organizations.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Define where you want to search and what type of organizations.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label htmlFor="location" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+            <label htmlFor="location" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
               Location <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 id="location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Puducherry, Chennai, Madurai"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="keyword" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+            <label htmlFor="keyword" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
               Keyword / Category <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 id="keyword"
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="e.g. CBSE Schools, Hospitals, Restaurants"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         <div className="mt-5 max-w-xs">
-          <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-            Search Radius <span className="text-slate-400 font-medium normal-case">(Optional)</span>
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+            Search Radius <span className="text-slate-400 dark:text-slate-500 font-medium normal-case">(Optional)</span>
           </label>
           <div className="relative">
             <select
               value={searchRadius}
               onChange={(e) => setSearchRadius(e.target.value)}
-              className="w-full appearance-none px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-10"
+              className="w-full appearance-none px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-10"
             >
               <option value="5">5 km</option>
               <option value="10">10 km</option>
@@ -165,22 +164,22 @@ function CreateTaskFormContent() {
               <option value="50">50 km</option>
               <option value="100">100 km</option>
             </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
       </section>
 
       {/* SECTION 2: Scraping Controls */}
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
         <div className="flex items-center gap-2 mb-1">
-          <SlidersHorizontal className="w-5 h-5 text-teal-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Scraping Controls</h2>
+          <SlidersHorizontal className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100">Scraping Controls</h2>
         </div>
-        <p className="text-xs text-slate-500 mb-6">Configure how deep the crawler should search.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Configure how deep the crawler should search.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
               Maximum Results
             </label>
             <input
@@ -189,12 +188,12 @@ function CreateTaskFormContent() {
               onChange={(e) => setMaxResults(Math.max(1, parseInt(e.target.value) || 0))}
               min={1}
               max={1000}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Max leads to discover (1–1000)</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Max leads to discover (1–1000)</p>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
               Max Pages / Website
             </label>
             <input
@@ -203,39 +202,39 @@ function CreateTaskFormContent() {
               onChange={(e) => setMaxPages(Math.max(1, parseInt(e.target.value) || 0))}
               min={1}
               max={100}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Pages to crawl per website (1–100)</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Pages to crawl per website (1–100)</p>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
               Crawl Depth
             </label>
             <div className="relative">
               <select
                 value={crawlDepth}
                 onChange={(e) => setCrawlDepth(parseInt(e.target.value))}
-                className="w-full appearance-none px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-10"
+                className="w-full appearance-none px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-10"
               >
                 <option value={1}>1 — Surface only</option>
                 <option value={2}>2 — Recommended</option>
                 <option value={3}>3 — Deep</option>
                 <option value={4}>4 — Very deep</option>
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">How deep to follow links</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">How deep to follow links</p>
           </div>
         </div>
       </section>
 
       {/* SECTION 3: Required Data */}
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-5 h-5 text-teal-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Required Data</h2>
+          <Sparkles className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100">Required Data</h2>
         </div>
-        <p className="text-xs text-slate-500 mb-6">Select the types of information you want to extract.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Select the types of information you want to extract.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {dataFields.map((field) => {
@@ -248,23 +247,23 @@ function CreateTaskFormContent() {
                 onClick={() => toggleField(field.key)}
                 className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
                   isSelected
-                    ? 'border-teal-500 bg-teal-50/60 shadow-sm'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-teal-500 bg-teal-50/60 dark:bg-teal-950/40 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                 }`}
               >
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                  isSelected ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-400'
+                  isSelected ? 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                 }`}>
                   <Icon className="w-4.5 h-4.5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold ${isSelected ? 'text-teal-900' : 'text-slate-700'}`}>
+                  <p className={`text-sm font-bold ${isSelected ? 'text-teal-900 dark:text-teal-300' : 'text-slate-700 dark:text-slate-300'}`}>
                     {field.label}
                   </p>
-                  <p className="text-[11px] text-slate-500 leading-snug mt-0.5">{field.description}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug mt-0.5">{field.description}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
-                  isSelected ? 'border-teal-500 bg-teal-500' : 'border-slate-300'
+                  isSelected ? 'border-teal-500 bg-teal-500' : 'border-slate-300 dark:border-slate-600'
                 }`}>
                   {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                 </div>
@@ -275,19 +274,19 @@ function CreateTaskFormContent() {
       </section>
 
       {/* SECTION 4: Responsible Crawling */}
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
         <div className="flex items-center gap-2 mb-1">
-          <Shield className="w-5 h-5 text-teal-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Responsible Crawling</h2>
+          <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100">Responsible Crawling</h2>
         </div>
-        <p className="text-xs text-slate-500 mb-5">We respect website access restrictions and rate limits.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">We respect website access restrictions and rate limits.</p>
 
         {/* Info Card */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900/60 rounded-xl p-4 mb-5 flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-blue-900 font-semibold mb-1">How we crawl responsibly</p>
-            <p className="text-xs text-blue-800/80 leading-relaxed">
+            <p className="text-sm text-blue-900 dark:text-blue-200 font-semibold mb-1">How we crawl responsibly</p>
+            <p className="text-xs text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
               Only publicly accessible pages will be processed. The crawler respects reasonable rate limits, robots.txt directives, and access restrictions. No authentication is bypassed.
             </p>
           </div>
@@ -298,38 +297,38 @@ function CreateTaskFormContent() {
             type="checkbox"
             checked={acknowledged}
             onChange={(e) => setAcknowledged(e.target.checked)}
-            className="w-5 h-5 rounded border-slate-300 text-teal-600 focus:ring-teal-500/20 mt-0.5 shrink-0 cursor-pointer"
+            className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 text-teal-600 focus:ring-teal-500/20 mt-0.5 shrink-0 cursor-pointer"
           />
-          <span className="text-sm text-slate-700 leading-relaxed group-hover:text-slate-900 transition-colors">
+          <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
             I understand that protected pages, authentication-required content and CAPTCHA challenges will not be bypassed.
           </span>
         </label>
       </section>
 
       {/* SECTION 5: Task Summary & Submit */}
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-card p-6 md:p-8">
-        <h2 className="text-base font-extrabold text-slate-900 mb-5">Task Summary</h2>
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card p-6 md:p-8">
+        <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-5">Task Summary</h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          <div className="bg-slate-50 rounded-xl p-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Location</p>
-            <p className="text-sm font-bold text-slate-900 truncate">{location || '—'}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Location</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{location || '—'}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Keyword</p>
-            <p className="text-sm font-bold text-slate-900 truncate">{keyword || '—'}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Keyword</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{keyword || '—'}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Max Results</p>
-            <p className="text-sm font-bold text-slate-900">{maxResults}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Max Results</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{maxResults}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pages / Site</p>
-            <p className="text-sm font-bold text-slate-900">{maxPages}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pages / Site</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{maxPages}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Fields</p>
-            <p className="text-sm font-bold text-slate-900">{selectedFields.length} selected</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Data Fields</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{selectedFields.length} selected</p>
           </div>
         </div>
 
@@ -337,7 +336,7 @@ function CreateTaskFormContent() {
           <button
             onClick={handleSubmit}
             disabled={submitting || !location.trim() || !keyword.trim() || !acknowledged}
-            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl shadow-lg shadow-teal-600/25 hover:shadow-teal-600/35 transition-all duration-200"
+            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl shadow-lg shadow-teal-600/25 hover:shadow-teal-600/35 transition-all duration-200"
           >
             {submitting ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -351,7 +350,7 @@ function CreateTaskFormContent() {
           </button>
           <button
             onClick={() => router.push('/dashboard')}
-            className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+            className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
           >
             Cancel
           </button>
@@ -363,7 +362,7 @@ function CreateTaskFormContent() {
 
 export default function CreateTaskPage() {
   return (
-    <Suspense fallback={<div className="animate-pulse p-8"><div className="h-8 bg-slate-200 rounded w-64 mb-4" /><div className="h-4 bg-slate-100 rounded w-96" /></div>}>
+    <Suspense fallback={<div className="animate-pulse p-8"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-64 mb-4" /><div className="h-4 bg-slate-100 dark:bg-slate-800/60 rounded w-96" /></div>}>
       <CreateTaskFormContent />
     </Suspense>
   );
