@@ -16,31 +16,56 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
 
+  // Synchronize state with DOM and localStorage on mount
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme') as Theme | null;
-    if (storedTheme === 'dark' || storedTheme === 'light') {
-      setThemeState(storedTheme);
-      document.documentElement.classList.toggle('dark', storedTheme === 'dark');
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
+    try {
+      const storedTheme = localStorage.getItem('theme') as Theme | null;
+      let initialTheme: Theme;
+
+      if (storedTheme === 'dark' || storedTheme === 'light') {
+        initialTheme = storedTheme;
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        initialTheme = prefersDark ? 'dark' : 'light';
+        localStorage.setItem('theme', initialTheme);
+      }
+
       setThemeState(initialTheme);
-      document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+      if (initialTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      console.error('Failed to initialize theme from localStorage:', e);
     }
   }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      localStorage.setItem('theme', newTheme);
+    } catch (e) {
+      console.error('Failed to save theme to localStorage:', e);
+    }
+
+    if (typeof document !== 'undefined') {
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    // Check actual DOM element class list as source of truth to avoid stale closure state
+    const isCurrentlyDark = typeof document !== 'undefined'
+      ? document.documentElement.classList.contains('dark')
+      : theme === 'dark';
+
+    const nextTheme: Theme = isCurrentlyDark ? 'light' : 'dark';
+    setTheme(nextTheme);
   };
 
   return (
@@ -77,18 +102,20 @@ export function ThemeToggle() {
     );
   }
 
+  const isDark = theme === 'dark';
+
   return (
     <button
       onClick={toggleTheme}
       type="button"
       className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-      title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-      aria-label="Toggle Theme"
+      title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+      aria-label={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
     >
-      {theme === 'dark' ? (
+      {isDark ? (
         <Sun className="w-5 h-5 text-amber-400" />
       ) : (
-        <Moon className="w-5 h-5 text-slate-600" />
+        <Moon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
       )}
     </button>
   );
