@@ -188,48 +188,27 @@ export interface CreateTaskPayload {
 }
 
 export async function createScrapingTask(payload: CreateTaskPayload): Promise<ScrapingTask> {
-  // Simulate network latency
-  await new Promise((res) => setTimeout(res, 600));
-
-  const newTask: ScrapingTask = {
-    id: `TASK-${Math.floor(100000 + Math.random() * 900000)}`,
-    location: payload.location,
-    keyword: payload.keyword,
-    searchRadiusKm: payload.searchRadiusKm || 25,
-    maxResults: payload.maxResults,
-    maxPagesPerWebsite: payload.maxPagesPerWebsite,
-    crawlDepth: payload.crawlDepth,
-    requiredFields: payload.requiredFields,
-    resultsCount: 0,
-    websitesCount: 0,
-    status: 'RUNNING',
-    createdAt: new Date().toLocaleString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    }),
-  };
-
-  mockTasks.unshift(newTask);
-  return newTask;
+  return requestApi('/api/tasks', { method: 'POST', body: payload });
 }
 
 export async function getTasks(): Promise<ScrapingTask[]> {
-  await new Promise((res) => setTimeout(res, 300));
-  return [...mockTasks];
+  try {
+    return await requestApi('/api/tasks');
+  } catch (err) {
+    return [...mockTasks];
+  }
 }
 
 export async function getTaskById(taskId: string): Promise<ScrapingTask | null> {
-  await new Promise((res) => setTimeout(res, 200));
-  return mockTasks.find((t) => t.id === taskId) || null;
+  try {
+    return await requestApi(`/api/tasks/${taskId}`);
+  } catch (err) {
+    return mockTasks.find((t) => t.id === taskId) || null;
+  }
 }
 
 export async function getTaskProgress(taskId: string): Promise<ScrapingProgress> {
-  await new Promise((res) => setTimeout(res, 200));
-  const task = mockTasks.find((t) => t.id === taskId);
+  const task = await getTaskById(taskId);
   if (task) {
     return {
       ...mockProgressData,
@@ -249,39 +228,44 @@ export async function getLeads(filters?: {
   category?: string;
   confidence?: string;
 }): Promise<Lead[]> {
-  await new Promise((res) => setTimeout(res, 300));
-  let result = [...mockLeads];
-
-  if (filters?.taskId) {
-    result = result.filter((l) => l.taskId === filters.taskId);
+  try {
+    const queryParams = new URLSearchParams();
+    if (filters?.taskId) queryParams.append('taskId', filters.taskId);
+    if (filters?.search) queryParams.append('search', filters.search);
+    if (filters?.location) queryParams.append('location', filters.location);
+    if (filters?.category) queryParams.append('category', filters.category);
+    if (filters?.confidence) queryParams.append('confidence', filters.confidence);
+    
+    const queryString = queryParams.toString();
+    const path = `/api/leads${queryString ? `?${queryString}` : ''}`;
+    return await requestApi(path);
+  } catch (err) {
+    let result = [...mockLeads];
+    if (filters?.taskId) result = result.filter((l) => l.taskId === filters.taskId);
+    if (filters?.location) result = result.filter((l) => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
+    if (filters?.category) result = result.filter((l) => l.category.toLowerCase().includes(filters.category!.toLowerCase()));
+    if (filters?.confidence) result = result.filter((l) => l.confidence === filters.confidence);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (l) =>
+          l.organizationName.toLowerCase().includes(q) ||
+          l.city.toLowerCase().includes(q) ||
+          l.email.toLowerCase().includes(q) ||
+          l.phone.includes(q) ||
+          l.website.toLowerCase().includes(q)
+      );
+    }
+    return result;
   }
-  if (filters?.location) {
-    result = result.filter((l) => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
-  }
-  if (filters?.category) {
-    result = result.filter((l) => l.category.toLowerCase().includes(filters.category!.toLowerCase()));
-  }
-  if (filters?.confidence) {
-    result = result.filter((l) => l.confidence === filters.confidence);
-  }
-  if (filters?.search) {
-    const query = filters.search.toLowerCase();
-    result = result.filter(
-      (l) =>
-        l.organizationName.toLowerCase().includes(query) ||
-        l.city.toLowerCase().includes(query) ||
-        l.email.toLowerCase().includes(query) ||
-        l.phone.includes(query) ||
-        l.website.toLowerCase().includes(query)
-    );
-  }
-
-  return result;
 }
 
 export async function getLeadById(leadId: string): Promise<Lead | null> {
-  await new Promise((res) => setTimeout(res, 200));
-  return mockLeads.find((l) => l.id === leadId) || null;
+  try {
+    return await requestApi(`/api/leads/${leadId}`);
+  } catch (err) {
+    return mockLeads.find((l) => l.id === leadId) || null;
+  }
 }
 
 export async function triggerFileDownload(url: string, fallbackFileName: string): Promise<string> {
