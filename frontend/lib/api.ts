@@ -34,12 +34,31 @@ export interface UserResponse {
   id: number;
   email: string;
   username: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface TokenResponse {
   access_token: string;
   token_type: string;
   user: UserResponse;
+}
+
+export interface UserProfileData {
+  id: number;
+  email: string;
+  username: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  default_max_results: number;
+  default_max_pages: number;
+  default_crawl_depth: number;
+  request_timeout: number;
+  retry_limit: number;
+  domain_rate_limit: number;
+  task_complete_notify: boolean;
+  task_failed_notify: boolean;
+  weekly_report_notify: boolean;
 }
 
 export function extractErrorMessage(errData: any): string {
@@ -59,40 +78,46 @@ export function extractErrorMessage(errData: any): string {
  * Centralized fetch helper with automatic fallback between 127.0.0.1 and localhost
  * handles network connection failures gracefully.
  */
-async function authFetch(path: string, payload: any): Promise<any> {
+export async function requestApi(path: string, options: { method?: string; body?: any; isFormData?: boolean } = {}): Promise<any> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const primaryUrl = `${API_BASE_URL}${cleanPath}`;
   const fallbackUrl = primaryUrl.includes('127.0.0.1')
     ? primaryUrl.replace('127.0.0.1', 'localhost')
     : primaryUrl.replace('localhost', '127.0.0.1');
 
-  let response: Response | null = null;
+  const method = options.method || 'GET';
+  const headers: Record<string, string> = {};
 
+  if (!options.isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  const fetchOptions: RequestInit = {
+    method,
+    headers,
+    body: options.isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
+  };
+
+  let response: Response | null = null;
   try {
-    response = await fetch(primaryUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch (primaryErr) {
-    // Primary URL connection failed -> try fallback URL (e.g. 127.0.0.1 vs localhost)
+    response = await fetch(primaryUrl, fetchOptions);
+  } catch (err) {
     try {
-      response = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      response = await fetch(fallbackUrl, fetchOptions);
     } catch (fallbackErr) {
-      throw new Error(
-        'Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.'
-      );
+      throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
     }
   }
 
   if (!response) {
-    throw new Error(
-      'Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.'
-    );
+    throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
   }
 
   let data: any = {};
@@ -109,6 +134,10 @@ async function authFetch(path: string, payload: any): Promise<any> {
   return data;
 }
 
+async function authFetch(path: string, payload: any): Promise<any> {
+  return requestApi(path, { method: 'POST', body: payload });
+}
+
 export async function registerUser(payload: UserCreatePayload): Promise<UserResponse> {
   return authFetch('/api/auth/register', payload);
 }
@@ -119,6 +148,32 @@ export async function loginUser(payload: UserLoginPayload): Promise<TokenRespons
 
 export async function changePassword(payload: ChangePasswordPayload): Promise<{ message: string }> {
   return authFetch('/api/auth/change-password', payload);
+}
+
+export async function getCurrentUser(): Promise<UserProfileData> {
+  return requestApi('/api/users/me');
+}
+
+export async function updateUserProfile(payload: { full_name?: string; email?: string }): Promise<UserProfileData> {
+  return requestApi('/api/users/me/profile', { method: 'PUT', body: payload });
+}
+
+export async function updateScrapingDefaults(payload: { default_max_results: number; default_max_pages: number; default_crawl_depth: number }): Promise<UserProfileData> {
+  return requestApi('/api/users/me/scraping-defaults', { method: 'PUT', body: payload });
+}
+
+export async function updateCrawlingSettings(payload: { request_timeout: number; retry_limit: number; domain_rate_limit: number }): Promise<UserProfileData> {
+  return requestApi('/api/users/me/crawling', { method: 'PUT', body: payload });
+}
+
+export async function updateNotificationSettings(payload: { task_complete_notify: boolean; task_failed_notify: boolean; weekly_report_notify: boolean }): Promise<UserProfileData> {
+  return requestApi('/api/users/me/notifications', { method: 'PUT', body: payload });
+}
+
+export async function uploadUserAvatar(file: File): Promise<UserProfileData> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return requestApi('/api/users/me/avatar', { method: 'POST', body: formData, isFormData: true });
 }
 
 export interface CreateTaskPayload {

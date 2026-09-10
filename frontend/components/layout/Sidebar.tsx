@@ -17,6 +17,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import { useUser } from '@/components/shared/UserContext';
+
 interface SidebarProps {
   collapsed: boolean;
   onToggleCollapse: () => void;
@@ -39,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, getAvatarUrl, getDisplayName, getInitials } = useUser();
 
   const handleLogout = () => {
     router.push('/login');
@@ -129,14 +132,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             collapsed ? 'justify-center' : ''
           }`}
         >
-          <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
-            MR
-          </div>
+          {getAvatarUrl() ? (
+            <img
+              src={getAvatarUrl()!}
+              alt={getDisplayName()}
+              className="w-9 h-9 rounded-full object-cover shrink-0 shadow-sm border border-teal-500/30"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+              {getInitials()}
+            </div>
+          )}
 
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">Muthu Ram</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">muthu@leadfinder.io</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{getDisplayName()}</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user?.email || ''}</p>
             </div>
           )}
 

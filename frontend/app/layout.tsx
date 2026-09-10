@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ToastProvider } from '@/components/shared/ToastContext';
 import { ThemeProvider } from '@/components/shared/ThemeContext';
+import { UserProvider } from '@/components/shared/UserContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -32,7 +33,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-150">
         <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <UserProvider>{children}</UserProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

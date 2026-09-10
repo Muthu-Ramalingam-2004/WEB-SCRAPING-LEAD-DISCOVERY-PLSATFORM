@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   User,
   Shield,
@@ -11,18 +11,30 @@ import {
   Clock,
   RotateCcw,
   Gauge,
+  Loader2,
 } from 'lucide-react';
 import { useToast } from '@/components/shared/ToastContext';
+import { useUser } from '@/components/shared/UserContext';
+import {
+  updateUserProfile,
+  updateScrapingDefaults,
+  updateCrawlingSettings,
+  updateNotificationSettings,
+  uploadUserAvatar,
+} from '@/lib/api';
 
 type SettingsTab = 'profile' | 'scraping' | 'crawling' | 'notifications';
 
 export default function SettingsPage() {
   const { showToast } = useToast();
+  const { user, setUser, getAvatarUrl, getDisplayName, getInitials } = useUser();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Profile state
-  const [name, setName] = useState('Muthu Ram');
-  const [email, setEmail] = useState('muthu@leadfinder.io');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
   // Scraping defaults
   const [defaultMaxResults, setDefaultMaxResults] = useState(100);
@@ -39,8 +51,140 @@ export default function SettingsPage() {
   const [taskFailed, setTaskFailed] = useState(true);
   const [weeklyReport, setWeeklyReport] = useState(false);
 
-  const handleSave = () => {
-    showToast('Settings saved', 'Your preferences have been updated.', 'success');
+  // Saving & Loading states
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingScraping, setSavingScraping] = useState(false);
+  const [savingCrawling, setSavingCrawling] = useState(false);
+  const [savingNotifications, setSavingNotifications] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Sync state when user object loads/changes
+  useEffect(() => {
+    if (user) {
+      setName(user.full_name || user.username || '');
+      setEmail(user.email || '');
+      setDefaultMaxResults(user.default_max_results ?? 100);
+      setDefaultMaxPages(user.default_max_pages ?? 20);
+      setDefaultCrawlDepth(user.default_crawl_depth ?? 2);
+      setRequestTimeout(user.request_timeout ?? 30);
+      setRetryLimit(user.retry_limit ?? 3);
+      setDomainRateLimit(user.domain_rate_limit ?? 2);
+      setTaskComplete(user.task_complete_notify ?? true);
+      setTaskFailed(user.task_failed_notify ?? true);
+      setWeeklyReport(user.weekly_report_notify ?? false);
+    }
+  }, [user]);
+
+  // 1. PROFILE SAVE
+  const handleSaveProfile = async () => {
+    if (!name.trim()) {
+      showToast('Validation Error', 'Full Name cannot be empty.', 'error');
+      return;
+    }
+    if (!email.trim()) {
+      showToast('Validation Error', 'Email Address cannot be empty.', 'error');
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      const updated = await updateUserProfile({ full_name: name.trim(), email: email.trim() });
+      setUser(updated);
+      showToast('Profile Saved', 'Your profile details have been updated.', 'success');
+    } catch (err: any) {
+      showToast('Save Failed', err.message || 'Failed to update profile.', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  // PHOTO UPLOAD
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      showToast('Invalid File', 'Please select a valid image (JPG, JPEG, PNG, WEBP).', 'error');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      showToast('File Too Large', 'Image size must be less than 5MB.', 'error');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const updated = await uploadUserAvatar(file);
+      setUser(updated);
+      showToast('Photo Updated', 'Your profile photo has been updated successfully.', 'success');
+    } catch (err: any) {
+      showToast('Upload Failed', err.message || 'Failed to upload profile photo.', 'error');
+    } finally {
+      setUploadingPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  // 2. SCRAPING DEFAULTS SAVE
+  const handleSaveScraping = async () => {
+    setSavingScraping(true);
+    try {
+      const updated = await updateScrapingDefaults({
+        default_max_results: defaultMaxResults,
+        default_max_pages: defaultMaxPages,
+        default_crawl_depth: defaultCrawlDepth,
+      });
+      setUser(updated);
+      showToast('Scraping Defaults Saved', 'Your default scraping configuration has been updated.', 'success');
+    } catch (err: any) {
+      showToast('Save Failed', err.message || 'Failed to update scraping defaults.', 'error');
+    } finally {
+      setSavingScraping(false);
+    }
+  };
+
+  // 3. RESPONSIBLE CRAWLING SAVE
+  const handleSaveCrawling = async () => {
+    setSavingCrawling(true);
+    try {
+      const updated = await updateCrawlingSettings({
+        request_timeout: requestTimeout,
+        retry_limit: retryLimit,
+        domain_rate_limit: domainRateLimit,
+      });
+      setUser(updated);
+      showToast('Crawling Settings Saved', 'Your responsible crawling settings have been updated.', 'success');
+    } catch (err: any) {
+      showToast('Save Failed', err.message || 'Failed to update crawling settings.', 'error');
+    } finally {
+      setSavingCrawling(false);
+    }
+  };
+
+  // 4. NOTIFICATIONS SAVE
+  const handleSaveNotifications = async () => {
+    setSavingNotifications(true);
+    try {
+      const updated = await updateNotificationSettings({
+        task_complete_notify: taskComplete,
+        task_failed_notify: taskFailed,
+        weekly_report_notify: weeklyReport,
+      });
+      setUser(updated);
+      showToast('Notification Preferences Saved', 'Your notification settings have been updated.', 'success');
+    } catch (err: any) {
+      showToast('Save Failed', err.message || 'Failed to update notification preferences.', 'error');
+    } finally {
+      setSavingNotifications(false);
+    }
   };
 
   const tabs: { key: SettingsTab; label: string; icon: React.ElementType }[] = [
@@ -52,6 +196,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Hidden File Input for Profile Photo Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+        className="hidden"
+      />
+
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Settings</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account and configure scraping preferences.</p>
@@ -91,13 +244,34 @@ export default function SettingsPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">Manage your account information.</p>
               </div>
 
-              {/* Avatar */}
+              {/* Avatar & Photo Upload */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-md">
-                  MR
-                </div>
-                <button className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
-                  <Camera className="w-3.5 h-3.5" /> Change Photo
+                {getAvatarUrl() ? (
+                  <img
+                    src={getAvatarUrl()!}
+                    alt={getDisplayName()}
+                    className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-teal-500/30"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-md">
+                    {getInitials()}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handlePhotoClick}
+                  disabled={uploadingPhoto}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {uploadingPhoto ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Change Photo
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -108,7 +282,8 @@ export default function SettingsPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingProfile}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   />
                 </div>
                 <div>
@@ -117,16 +292,27 @@ export default function SettingsPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingProfile}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   />
                 </div>
               </div>
 
               <button
-                onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={savingProfile}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
               >
-                <Save className="w-4 h-4" /> Save Changes
+                {savingProfile ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Save Changes
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -147,7 +333,8 @@ export default function SettingsPage() {
                     value={defaultMaxResults}
                     onChange={(e) => setDefaultMaxResults(parseInt(e.target.value) || 0)}
                     min={1}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingScraping}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   />
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Maximum leads to discover per task</p>
                 </div>
@@ -158,7 +345,8 @@ export default function SettingsPage() {
                     value={defaultMaxPages}
                     onChange={(e) => setDefaultMaxPages(parseInt(e.target.value) || 0)}
                     min={1}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingScraping}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   />
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">How many pages to check per website</p>
                 </div>
@@ -167,7 +355,8 @@ export default function SettingsPage() {
                   <select
                     value={defaultCrawlDepth}
                     onChange={(e) => setDefaultCrawlDepth(parseInt(e.target.value))}
-                    className="w-full appearance-none px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingScraping}
+                    className="w-full appearance-none px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   >
                     <option value={1}>1 — Surface</option>
                     <option value={2}>2 — Recommended</option>
@@ -179,10 +368,20 @@ export default function SettingsPage() {
               </div>
 
               <button
-                onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
+                type="button"
+                onClick={handleSaveScraping}
+                disabled={savingScraping}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
               >
-                <Save className="w-4 h-4" /> Save Defaults
+                {savingScraping ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Save Defaults
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -207,7 +406,8 @@ export default function SettingsPage() {
                       onChange={(e) => setRequestTimeout(parseInt(e.target.value) || 0)}
                       min={5}
                       max={120}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-16"
+                      disabled={savingCrawling}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-16 disabled:opacity-60"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500 font-semibold">seconds</span>
                   </div>
@@ -223,7 +423,8 @@ export default function SettingsPage() {
                     onChange={(e) => setRetryLimit(parseInt(e.target.value) || 0)}
                     min={0}
                     max={10}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    disabled={savingCrawling}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-60"
                   />
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Number of retries before skipping a page</p>
                 </div>
@@ -238,7 +439,8 @@ export default function SettingsPage() {
                       onChange={(e) => setDomainRateLimit(parseInt(e.target.value) || 0)}
                       min={1}
                       max={30}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-20"
+                      disabled={savingCrawling}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all pr-20 disabled:opacity-60"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500 font-semibold">sec/req</span>
                   </div>
@@ -247,10 +449,20 @@ export default function SettingsPage() {
               </div>
 
               <button
-                onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
+                type="button"
+                onClick={handleSaveCrawling}
+                disabled={savingCrawling}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
               >
-                <Save className="w-4 h-4" /> Save Settings
+                {savingCrawling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Save Settings
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -285,10 +497,20 @@ export default function SettingsPage() {
               </div>
 
               <button
-                onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
+                type="button"
+                onClick={handleSaveNotifications}
+                disabled={savingNotifications}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold text-sm rounded-xl shadow-sm transition-all"
               >
-                <Save className="w-4 h-4" /> Save Preferences
+                {savingNotifications ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Save Preferences
+                  </>
+                )}
               </button>
             </div>
           )}

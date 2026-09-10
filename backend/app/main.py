@@ -30,11 +30,47 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.api import auth
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect, text
+
+# Static file serving for uploaded avatars
+uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
+from app.api import auth, users
 from app.database.database import engine, Base
 
-# Create tables
+# Create tables & auto-migrate missing columns
 Base.metadata.create_all(bind=engine)
+
+def auto_migrate():
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        if "users" in inspector.get_table_names():
+            existing_cols = [c["name"] for c in inspector.get_columns("users")]
+            new_cols = {
+                "full_name": "VARCHAR",
+                "avatar_url": "VARCHAR",
+                "default_max_results": "INTEGER DEFAULT 100",
+                "default_max_pages": "INTEGER DEFAULT 20",
+                "default_crawl_depth": "INTEGER DEFAULT 2",
+                "request_timeout": "INTEGER DEFAULT 30",
+                "retry_limit": "INTEGER DEFAULT 3",
+                "domain_rate_limit": "INTEGER DEFAULT 2",
+                "task_complete_notify": "BOOLEAN DEFAULT 1",
+                "task_failed_notify": "BOOLEAN DEFAULT 1",
+                "weekly_report_notify": "BOOLEAN DEFAULT 0",
+            }
+            for col_name, col_type in new_cols.items():
+                if col_name not in existing_cols:
+                    try:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                    except Exception:
+                        pass
+
+auto_migrate()
 
 @app.get("/api/health")
 async def health_check():
@@ -44,6 +80,7 @@ async def health_check():
     return {"status": "ok", "service": "lead-discovery-backend"}
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 # Future Endpoints - Placeholders to define architecture boundaries
 
