@@ -284,23 +284,91 @@ export async function getLeadById(leadId: string): Promise<Lead | null> {
   return mockLeads.find((l) => l.id === leadId) || null;
 }
 
+export async function triggerFileDownload(url: string, fallbackFileName: string): Promise<string> {
+  const cleanUrl = url.startsWith('http://') || url.startsWith('https://')
+    ? url
+    : `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+
+  const headers: Record<string, string> = {};
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(cleanUrl, { headers });
+  } catch (err) {
+    const fallbackUrl = cleanUrl.includes('127.0.0.1')
+      ? cleanUrl.replace('127.0.0.1', 'localhost')
+      : cleanUrl.replace('localhost', '127.0.0.1');
+    try {
+      response = await fetch(fallbackUrl, { headers });
+    } catch (fallbackErr) {
+      throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
+    }
+  }
+
+  if (!response.ok) {
+    let errMsg = 'Failed to download export file.';
+    try {
+      const errData = await response.json();
+      errMsg = extractErrorMessage(errData);
+    } catch (e) {}
+    throw new Error(errMsg);
+  }
+
+  let fileName = fallbackFileName;
+  const disposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
+  if (disposition && disposition.includes('filename=')) {
+    const match = disposition.match(/filename=["']?([^"';]+)["']?/);
+    if (match && match[1]) {
+      fileName = match[1];
+    }
+  }
+
+  const blob = await response.blob();
+  if (typeof window !== 'undefined') {
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    }, 300);
+  }
+
+  return fileName;
+}
+
 export async function exportLeadsToCsv(taskId?: string): Promise<{ downloadUrl: string; fileName: string }> {
-  await new Promise((res) => setTimeout(res, 500));
-  return {
-    downloadUrl: '#',
-    fileName: `leads_export_${taskId || 'all'}_${Date.now()}.csv`,
-  };
+  const path = taskId ? `/api/tasks/${taskId}/export/csv` : '/api/exports/csv';
+  const fileName = await triggerFileDownload(path, `leads_export_${taskId || 'all'}_${Date.now()}.csv`);
+  return { downloadUrl: `${API_BASE_URL}${path}`, fileName };
 }
 
 export async function exportLeadsToExcel(taskId?: string): Promise<{ downloadUrl: string; fileName: string }> {
-  await new Promise((res) => setTimeout(res, 500));
-  return {
-    downloadUrl: '#',
-    fileName: `leads_export_${taskId || 'all'}_${Date.now()}.xlsx`,
-  };
+  const path = taskId ? `/api/tasks/${taskId}/export/excel` : '/api/exports/excel';
+  const fileName = await triggerFileDownload(path, `leads_export_${taskId || 'all'}_${Date.now()}.xlsx`);
+  return { downloadUrl: `${API_BASE_URL}${path}`, fileName };
 }
 
 export async function getExportHistory(): Promise<ExportHistoryItem[]> {
-  await new Promise((res) => setTimeout(res, 200));
-  return [...mockExportHistory];
+  try {
+    const history = await requestApi('/api/exports/history');
+    return history;
+  } catch (err) {
+    return [...mockExportHistory];
+  }
+}
+
+export async function downloadExportHistoryItem(id: string, fallbackFileName: string): Promise<string> {
+  const path = `/api/exports/download/${id}`;
+  return triggerFileDownload(path, fallbackFileName || `export_${id}.csv`);
 }

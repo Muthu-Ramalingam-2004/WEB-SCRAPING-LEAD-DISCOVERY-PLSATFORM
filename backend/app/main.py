@@ -38,7 +38,7 @@ uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads"
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
-from app.api import auth, users
+from app.api import auth, users, exports
 from app.database.database import engine, Base
 
 # Create tables & auto-migrate missing columns
@@ -81,6 +81,7 @@ async def health_check():
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(exports.router, prefix="/api/exports", tags=["exports"])
 
 # Future Endpoints - Placeholders to define architecture boundaries
 

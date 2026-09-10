@@ -1,0 +1,6 @@
+﻿Lead ID,Organization Name,Category,City,State,Location,Phone,Email,Website,Confidence Level,Sources Count
+LEAD-001,St. Joseph Higher Secondary School,CBSE School,Puducherry,Puducherry,"Lawspet, Puducherry",+91 413 225 1234,contact@stjosephpdy.edu.in,stjosephpdy.edu.in,HIGH,4
+LEAD-002,Achariya World Class Educational Campus,International School,Puducherry,Puducherry,"Villianur, Puducherry",+91 413 260 0100,info@achariya.in,achariya.in,HIGH,5
+LEAD-003,Kendriya Vidyalaya No. 1,Central Government School,Puducherry,Puducherry,"JIPMER Campus, Puducherry",+91 413 227 2345,kv1puducherry@gmail.com,no1puducherry.kvs.ac.in,HIGH,3
+LEAD-004,College of Engineering Guindy (CEG),Engineering College,Chennai,Tamil Nadu,"Guindy, Chennai",+91 44 2235 7004,dean@ceg.annauniv.edu,ceg.annauniv.edu,HIGH,6
+LEAD-005,SSN College of Engineering,Private Engineering College,Chennai,Tamil Nadu,"Kalavakkam, OMR, Chennai",+91 44 2746 9700,info@ssn.edu.in,ssn.edu.in,HIGH,5

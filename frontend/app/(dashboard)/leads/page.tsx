@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { getLeads } from '@/lib/api';
+import { getLeads, exportLeadsToCsv } from '@/lib/api';
 import { Lead } from '@/types';
 import { ConfidenceBadge } from '@/components/shared/ConfidenceBadge';
 import { CopyButton } from '@/components/shared/CopyButton';
@@ -36,6 +36,7 @@ function LeadsContent() {
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -93,8 +94,17 @@ function LeadsContent() {
     }
   };
 
-  const handleExport = () => {
-    showToast('Export started', `Exporting ${selectedIds.size || filtered.length} leads as CSV...`, 'info');
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const taskId = searchParams.get('taskId') || undefined;
+      const result = await exportLeadsToCsv(taskId);
+      showToast('CSV Export Downloaded', `Saved file: ${result.fileName}`, 'success');
+    } catch (err: any) {
+      showToast('Export Failed', err.message || 'Unable to download export.', 'error');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (loading) {

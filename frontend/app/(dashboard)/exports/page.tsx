@@ -7,8 +7,9 @@ import {
   Download,
   Calendar,
   FileDown,
+  Loader2,
 } from 'lucide-react';
-import { getExportHistory, exportLeadsToCsv, exportLeadsToExcel } from '@/lib/api';
+import { getExportHistory, exportLeadsToCsv, exportLeadsToExcel, downloadExportHistoryItem } from '@/lib/api';
 import { ExportHistoryItem } from '@/types';
 import { useToast } from '@/components/shared/ToastContext';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -19,6 +20,7 @@ export default function ExportsPage() {
   const [history, setHistory] = useState<ExportHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState<'csv' | 'excel' | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -33,22 +35,40 @@ export default function ExportsPage() {
     setExporting('csv');
     try {
       const result = await exportLeadsToCsv();
-      showToast('CSV Export Ready', `File: ${result.fileName}`, 'success');
-    } catch {
-      showToast('Export failed', 'Please try again.', 'error');
+      showToast('CSV Downloaded', `Saved file: ${result.fileName}`, 'success');
+      const updatedHistory = await getExportHistory();
+      setHistory(updatedHistory);
+    } catch (err: any) {
+      showToast('Export failed', err.message || 'Please try again.', 'error');
+    } finally {
+      setExporting(null);
     }
-    setExporting(null);
   };
 
   const handleExportExcel = async () => {
     setExporting('excel');
     try {
       const result = await exportLeadsToExcel();
-      showToast('Excel Export Ready', `File: ${result.fileName}`, 'success');
-    } catch {
-      showToast('Export failed', 'Please try again.', 'error');
+      showToast('Excel Downloaded', `Saved file: ${result.fileName}`, 'success');
+      const updatedHistory = await getExportHistory();
+      setHistory(updatedHistory);
+    } catch (err: any) {
+      showToast('Export failed', err.message || 'Please try again.', 'error');
+    } finally {
+      setExporting(null);
     }
-    setExporting(null);
+  };
+
+  const handleDownloadHistoryItem = async (item: ExportHistoryItem) => {
+    setDownloadingId(item.id);
+    try {
+      const downloadedFileName = await downloadExportHistoryItem(item.id, item.fileName);
+      showToast('File Downloaded', `Saved file: ${downloadedFileName}`, 'success');
+    } catch (err: any) {
+      showToast('Download failed', err.message || 'Unable to download file.', 'error');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -170,8 +190,17 @@ export default function ExportsPage() {
                         <Calendar className="w-3 h-3" />{item.createdAt}
                       </td>
                       <td className="px-4 py-3.5 text-right">
-                        <button className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 transition-colors">
-                          <Download className="w-3.5 h-3.5" /> Download
+                        <button
+                          onClick={() => handleDownloadHistoryItem(item)}
+                          disabled={downloadingId === item.id}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 transition-colors disabled:opacity-50"
+                        >
+                          {downloadingId === item.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5" />
+                          )}
+                          Download
                         </button>
                       </td>
                     </tr>
