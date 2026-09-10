@@ -1,0 +1,9 @@
+﻿Lead ID,Organization Name,Category,City,State,Location,Phone,Email,Website,Confidence Level,Sources Count
+LEAD-001,St. Joseph Higher Secondary School,CBSE School,Puducherry,Puducherry,"Lawspet, Puducherry",+91 413 225 1234,contact@stjosephpdy.edu.in,stjosephpdy.edu.in,HIGH,4
+LEAD-002,Achariya World Class Educational Campus,International School,Puducherry,Puducherry,"Villianur, Puducherry",+91 413 260 0100,info@achariya.in,achariya.in,HIGH,5
+LEAD-003,Kendriya Vidyalaya No. 1,Central Government School,Puducherry,Puducherry,"JIPMER Campus, Puducherry",+91 413 227 2345,kv1puducherry@gmail.com,no1puducherry.kvs.ac.in,HIGH,3
+LEAD-004,College of Engineering Guindy (CEG),Engineering College,Chennai,Tamil Nadu,"Guindy, Chennai",+91 44 2235 7004,dean@ceg.annauniv.edu,ceg.annauniv.edu,HIGH,6
+LEAD-005,SSN College of Engineering,Private Engineering College,Chennai,Tamil Nadu,"Kalavakkam, OMR, Chennai",+91 44 2746 9700,info@ssn.edu.in,ssn.edu.in,HIGH,5
+LEAD-006,PSG College of Technology,Engineering College,Coimbatore,Tamil Nadu,"Peelamedu, Coimbatore",+91 422 257 2177,principal@psgtech.ac.in,psgtech.edu,HIGH,4
+LEAD-007,Zoho Corporation Headquarters,Software & SaaS Company,Chennai,Tamil Nadu,"Estancia IT Park, Guduvanchery",+91 44 6744 7070,sales@zohocorp.com,zoho.com,HIGH,7
+LEAD-008,Petit Seminaire Higher Secondary School,Matriculation School,Puducherry,Puducherry,"Heritage Town, Puducherry",+91 413 233 4567,petitseminaire@gmail.com,petitseminaire.ac.in,MEDIUM,3
