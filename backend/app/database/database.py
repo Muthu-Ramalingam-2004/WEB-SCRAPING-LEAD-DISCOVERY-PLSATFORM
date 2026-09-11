@@ -19,6 +19,10 @@ if DATABASE_URL.startswith("postgres://"):
 connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    # connect_timeout=5: fail fast if Supabase/PostgreSQL is cold-starting or unreachable
+    # rather than hanging the entire backend for 10-30+ seconds.
+    connect_args = {"connect_timeout": 5}
 
 engine_kwargs = {
     "connect_args": connect_args,
@@ -30,7 +34,7 @@ if not DATABASE_URL.startswith("sqlite"):
         "pool_size": 10,
         "max_overflow": 20,
         "pool_recycle": 300,
-        "pool_timeout": 10,
+        "pool_timeout": 5,  # Reduced from 10s — fail fast if no pool slot available
     })
 
 engine = create_engine(DATABASE_URL, **engine_kwargs)

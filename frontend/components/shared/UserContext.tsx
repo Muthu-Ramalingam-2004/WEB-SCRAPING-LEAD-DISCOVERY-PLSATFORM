@@ -17,8 +17,23 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Pre-load user from localStorage cache for instant first render (avoids flash of "Loading...")
+  const getCachedUser = (): UserProfileData | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const cached = localStorage.getItem('user');
+      return cached ? (JSON.parse(cached) as UserProfileData) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState<UserProfileData | null>(getCachedUser);
+  // Start loading=false if no token exists (e.g. login page) — avoids blocking render
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(localStorage.getItem('auth_token'));
+  });
   const [error, setError] = useState<string | null>(null);
 
   const fetchUser = async () => {
@@ -38,7 +53,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    fetchUser();
+    // Only call the API when an auth token is present.
+    // Without this guard, the login page triggered a pointless GET /api/users/me
+    // that waited for the Supabase-backed backend to respond (5-10s cold start).
+    if (typeof window !== 'undefined' && localStorage.getItem('auth_token')) {
+      fetchUser();
+    }
   }, []);
 
   const getAvatarUrl = (): string | null => {

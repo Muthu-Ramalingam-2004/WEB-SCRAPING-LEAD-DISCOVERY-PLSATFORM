@@ -1,6 +1,7 @@
 import os
 import uuid
 import shutil
+import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File, status
 from sqlalchemy.orm import Session
@@ -15,6 +16,7 @@ from app.schemas.user import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "avatars")
 os.makedirs(UPLOAD_DIR, exist_ok=True)

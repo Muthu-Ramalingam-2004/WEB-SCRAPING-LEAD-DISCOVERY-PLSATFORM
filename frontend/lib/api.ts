@@ -75,9 +75,19 @@ export function extractErrorMessage(errData: any): string {
 }
 
 /**
- * Centralized fetch helper with automatic fallback between 127.0.0.1 and localhost
- * handles network connection failures gracefully.
+ * Centralized fetch helper with automatic fallback between 127.0.0.1 and localhost.
+ * Includes a 12-second timeout to prevent hanging on slow/cold-starting backend or DB.
  */
+const REQUEST_TIMEOUT_MS = 12000;
+
+function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() =>
+    clearTimeout(timeoutId)
+  );
+}
+
 export async function requestApi(path: string, options: { method?: string; body?: any; isFormData?: boolean } = {}): Promise<any> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const primaryUrl = `${API_BASE_URL}${cleanPath}`;
@@ -107,10 +117,10 @@ export async function requestApi(path: string, options: { method?: string; body?
 
   let response: Response | null = null;
   try {
-    response = await fetch(primaryUrl, fetchOptions);
+    response = await fetchWithTimeout(primaryUrl, fetchOptions);
   } catch (err) {
     try {
-      response = await fetch(fallbackUrl, fetchOptions);
+      response = await fetchWithTimeout(fallbackUrl, fetchOptions);
     } catch (fallbackErr) {
       throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
     }
