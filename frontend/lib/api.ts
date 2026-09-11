@@ -10,7 +10,7 @@ import { ScrapingTask, Lead, ScrapingProgress, ExportHistoryItem, DataFieldKey }
  */
 
 // Centralized API configuration for future backend integration
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 
 export interface UserCreatePayload {
   email: string;
@@ -91,9 +91,7 @@ function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> 
 export async function requestApi(path: string, options: { method?: string; body?: any; isFormData?: boolean } = {}): Promise<any> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const primaryUrl = `${API_BASE_URL}${cleanPath}`;
-  const fallbackUrl = primaryUrl.includes('127.0.0.1')
-    ? primaryUrl.replace('127.0.0.1', 'localhost')
-    : primaryUrl.replace('localhost', '127.0.0.1');
+  // No fallback URL in production; always use primaryUrl
 
   const method = options.method || 'GET';
   const headers: Record<string, string> = {};
@@ -119,15 +117,12 @@ export async function requestApi(path: string, options: { method?: string; body?
   try {
     response = await fetchWithTimeout(primaryUrl, fetchOptions);
   } catch (err) {
-    try {
-      response = await fetchWithTimeout(fallbackUrl, fetchOptions);
-    } catch (fallbackErr) {
-      throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
-    }
+    // If primary request fails, surface a generic connection error
+    throw new Error('Unable to connect to backend server.');
   }
 
   if (!response) {
-    throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
+    throw new Error('Unable to connect to backend server.');
   }
 
   let data: any = {};
@@ -310,14 +305,8 @@ export async function triggerFileDownload(url: string, fallbackFileName: string)
   try {
     response = await fetch(cleanUrl, { headers });
   } catch (err) {
-    const fallbackUrl = cleanUrl.includes('127.0.0.1')
-      ? cleanUrl.replace('127.0.0.1', 'localhost')
-      : cleanUrl.replace('localhost', '127.0.0.1');
-    try {
-      response = await fetch(fallbackUrl, { headers });
-    } catch (fallbackErr) {
-      throw new Error('Unable to connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000.');
-    }
+    // If download fails, surface a generic connection error
+    throw new Error('Unable to connect to backend server.');
   }
 
   if (!response.ok) {
