@@ -75,7 +75,7 @@ export function extractErrorMessage(errData: any): string {
 }
 
 /**
- * Centralized fetch helper with automatic fallback between 127.0.0.1 and localhost.
+ * Centralized fetch helper with timeout protection.
  * Includes a 12-second timeout to prevent hanging on slow/cold-starting backend or DB.
  */
 const REQUEST_TIMEOUT_MS = 12000;
