@@ -134,6 +134,21 @@ export async function requestApi(path: string, options: { method?: string; body?
   return data;
 }
 
+/**
+ * Health check function to verify if FastAPI backend is online.
+ */
+export async function checkBackendHealth(): Promise<{ online: boolean; message?: string }> {
+  try {
+    const res = await requestApi('/api/health');
+    if (res && res.status === 'ok') {
+      return { online: true };
+    }
+    return { online: false, message: 'Backend health check returned invalid status.' };
+  } catch (err: any) {
+    return { online: false, message: err.message || 'Unable to connect to backend server.' };
+  }
+}
+
 async function authFetch(path: string, payload: any): Promise<any> {
   return requestApi(path, { method: 'POST', body: payload });
 }

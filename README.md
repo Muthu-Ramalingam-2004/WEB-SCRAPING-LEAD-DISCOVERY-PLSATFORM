@@ -2,46 +2,51 @@
 
 This project is a complete end-to-end platform for automated web scraping, data extraction, and lead discovery.
 
-## Project Structure
+## Quick Start (Recommended After Laptop Restart)
 
-### `frontend/`
-Contains the Next.js + React UI.
-This frontend provides a modern, premium SaaS dashboard for managing scraping tasks, viewing real-time progress, verifying leads, and exporting data.
+### Option A: One-Command Fullstack Start (Root Directory)
 
-### `backend/`
-Contains the Python + FastAPI API and the core scraping engine infrastructure.
-The backend handles the task queuing, official website discovery, web crawling, contact extraction, and data deduplication.
-
----
-
-## Running Frontend
-
-The frontend runs on **Port 3000** (default).
+From the project root workspace:
 
 ```bash
-cd frontend
-npm install
 npm run dev
 ```
 
-Then visit `http://localhost:3000` in your browser.
+This launches both the **FastAPI Backend (Port 8000)** and the **Next.js Frontend (Port 3000)** concurrently.
+
+Alternatively, on Windows, double-click `start-all.bat`.
 
 ---
 
-## Running Backend
+### Option B: Starting Backend & Frontend Separately
 
-The backend API runs on **Port 8000** (default).
+#### 1. Backend Startup (Python + FastAPI)
 
 ```bash
 cd backend
-python -m venv .venv
-# Activate virtual environment
-# Windows: .\.venv\Scripts\activate
-# Mac/Linux: source .venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Then visit `http://localhost:8000/api/health` to verify the backend is running.
-API documentation will be available at `http://localhost:8000/docs`.
+*(Fail-safe note: Running `npm run dev` inside `backend/` will also automatically execute the Python Uvicorn backend server).*
+
+Verify backend health at: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
+API documentation available at: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+#### 2. Frontend Startup (Next.js + React)
+
+```bash
+cd frontend
+npm run dev
+```
+
+Access the UI at: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Project Structure
+
+- `frontend/`: Next.js + React dashboard.
+- `backend/`: Python + FastAPI backend, Supabase PostgreSQL ORM models, and scraping infrastructure.
+- `start-all.bat`: One-click Windows batch launcher for both servers.
+- `start-backend.bat`: One-click Windows batch launcher for backend.
+- `start-frontend.bat`: One-click Windows batch launcher for frontend.

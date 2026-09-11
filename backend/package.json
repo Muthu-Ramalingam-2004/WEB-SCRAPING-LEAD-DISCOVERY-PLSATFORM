@@ -1,0 +1,10 @@
+{
+  "name": "lead-discovery-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Python FastAPI Backend Wrapper (Fail-safe for npm run dev)",
+  "scripts": {
+    "dev": "node start-backend.js",
+    "start": "node start-backend.js"
+  }
+}

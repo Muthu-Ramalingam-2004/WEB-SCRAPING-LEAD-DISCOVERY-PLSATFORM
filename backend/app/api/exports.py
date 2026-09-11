@@ -299,7 +299,6 @@ def seed_initial_history_if_needed(db: Session):
 
 @router.get("/history", response_model=List[ExportHistoryResponse])
 def get_export_history(db: Session = Depends(get_db)):
-    seed_initial_history_if_needed(db)
     records = db.query(ExportRecord).order_by(ExportRecord.id.desc()).all()
     result = []
     for r in records:
