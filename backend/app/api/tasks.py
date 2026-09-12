@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
@@ -7,6 +7,8 @@ import random
 
 from app.database.database import get_db
 from app.models.task import ScrapingTaskModel
+from app.models.lead import LeadModel
+from app.scraping.pipeline import run_scraping_job, get_progress, set_progress
 
 router = APIRouter()
 
@@ -42,12 +44,11 @@ def format_task_response(task: ScrapingTaskModel):
 @router.get("/")
 def get_all_tasks(db: Session = Depends(get_db)):
     tasks = db.query(ScrapingTaskModel).all()
-    # Sort by creation date descending
     return [format_task_response(t) for t in reversed(tasks)]
 
 @router.post("/", status_code=201)
 @router.post("", status_code=201)
-def create_task(payload: CreateTaskSchema, db: Session = Depends(get_db)):
+def create_task(payload: CreateTaskSchema, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     new_id = f"TASK-{random.randint(100000, 999999)}"
     now_str = datetime.now().strftime("%d %b %Y, %I:%M %p")
     
@@ -68,6 +69,10 @@ def create_task(payload: CreateTaskSchema, db: Session = Depends(get_db)):
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
+
+    # Launch background scraping pipeline
+    background_tasks.add_task(run_scraping_job, new_id, payload.model_dump())
+
     return format_task_response(db_task)
 
 @router.get("/{task_id}")
@@ -76,3 +81,57 @@ def get_task_by_id(task_id: str, db: Session = Depends(get_db)):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return format_task_response(task)
+
+@router.get("/{task_id}/progress")
+def get_task_progress(task_id: str, db: Session = Depends(get_db)):
+    # 1. Check in-memory progress store for real-time progress
+    live_progress = get_progress(task_id)
+    if live_progress:
+        return live_progress
+
+    # 2. If task completed earlier or server restarted, reconstruct progress state from DB
+    task = db.query(ScrapingTaskModel).filter(ScrapingTaskModel.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    leads = db.query(LeadModel).filter(LeadModel.task_id == task_id).all()
+    leads_count = len(leads)
+    phones_count = sum(1 for l in leads if l.phone)
+    emails_count = sum(1 for l in leads if l.email)
+    addresses_count = sum(1 for l in leads if l.address)
+
+    is_completed = task.status in ["COMPLETED", "COMPLETED_WITH_ERRORS", "FAILED"]
+    percentage = 100 if is_completed else 50
+
+    return {
+        "taskId": task.id,
+        "location": task.location,
+        "keyword": task.keyword,
+        "status": task.status,
+        "percentage": percentage,
+        "resultsDiscovered": task.results_count or leads_count,
+        "websitesFound": task.websites_count or leads_count,
+        "websitesCrawled": task.websites_count or leads_count,
+        "phonesFound": phones_count,
+        "emailsFound": emails_count,
+        "addressesFound": addresses_count,
+        "duplicatesRemoved": 0,
+        "currentWebsite": "",
+        "currentPage": "",
+        "pagesCrawledForCurrentSite": 0,
+        "maxPagesForCurrentSite": task.max_pages_per_website,
+        "timeline": [
+            {"id": "step-1", "status": "completed", "title": "Task created", "description": f"Target: {task.location} + {task.keyword}"},
+            {"id": "step-2", "status": "completed", "title": "Discovery completed", "description": f"{task.results_count} results found"},
+            {"id": "step-3", "status": "completed", "title": "Crawling & extraction completed", "description": f"{leads_count} leads saved"},
+            {"id": "step-4", "status": "completed", "title": "Verification & finalization", "description": f"Status: {task.status}"},
+        ],
+        "failedWebsites": []
+    }
+
+@router.get("/{task_id}/leads")
+def get_task_leads(task_id: str, db: Session = Depends(get_db)):
+    leads = db.query(LeadModel).filter(LeadModel.task_id == task_id).all()
+    from app.api.leads import format_lead_response
+    return [format_lead_response(l) for l in leads]
+

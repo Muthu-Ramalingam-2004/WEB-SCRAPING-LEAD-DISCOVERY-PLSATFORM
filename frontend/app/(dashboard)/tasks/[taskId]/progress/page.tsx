@@ -34,36 +34,37 @@ export default function ProgressPage() {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
 
   useEffect(() => {
-    async function load() {
-      const data = await getTaskProgress(taskId);
-      setProgress(data);
-      setLoading(false);
-    }
-    load();
-  }, [taskId]);
+    let isMounted = true;
+    let timerId: NodeJS.Timeout | null = null;
 
-  // Animate percentage counter
-  useEffect(() => {
-    if (!progress) return;
-    const target = progress.percentage;
-    const duration = 1500;
-    const stepTime = 20;
-    const steps = duration / stepTime;
-    const increment = target / steps;
-    let current = 0;
+    async function fetchProgress() {
+      try {
+        const data = await getTaskProgress(taskId);
+        if (isMounted && data) {
+          setProgress(data);
+          setAnimatedPercentage(data.percentage);
+          setLoading(false);
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        setAnimatedPercentage(target);
-        clearInterval(timer);
-      } else {
-        setAnimatedPercentage(Math.floor(current));
+          // Continue polling if task is running and not completed
+          const isTerminal = ["COMPLETED", "COMPLETED_WITH_ERRORS", "FAILED", "CANCELLED"].includes(data.status) || data.percentage >= 100;
+          if (!isTerminal) {
+            timerId = setTimeout(fetchProgress, 2000);
+          }
+        }
+      } catch {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    }, stepTime);
+    }
 
-    return () => clearInterval(timer);
-  }, [progress]);
+    fetchProgress();
+
+    return () => {
+      isMounted = false;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [taskId]);
 
   if (loading) {
     return (

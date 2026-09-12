@@ -44,22 +44,43 @@ function LeadsContent() {
   const perPage = 10;
 
   useEffect(() => {
-    async function load() {
+    let isMounted = true;
+    let timerId: NodeJS.Timeout | null = null;
+
+    async function loadLeads() {
       const filters: Record<string, string> = {};
       const taskId = searchParams.get('taskId');
       if (taskId) filters.taskId = taskId;
-      const data = await getLeads(filters);
-      setLeads(data);
-      setLoading(false);
 
-      // Auto-select from URL
-      const selId = searchParams.get('selected');
-      if (selId) {
-        const match = data.find((l) => l.id === selId);
-        if (match) setSelectedLead(match);
+      try {
+        const data = await getLeads(filters);
+        if (isMounted) {
+          setLeads(data);
+          setLoading(false);
+
+          // Auto-select from URL on initial load
+          const selId = searchParams.get('selected');
+          if (selId && !selectedLead) {
+            const match = data.find((l) => l.id === selId);
+            if (match) setSelectedLead(match);
+          }
+
+          // Polling if filtering by specific taskId
+          if (taskId) {
+            timerId = setTimeout(loadLeads, 3000);
+          }
+        }
+      } catch {
+        if (isMounted) setLoading(false);
       }
     }
-    load();
+
+    loadLeads();
+
+    return () => {
+      isMounted = false;
+      if (timerId) clearTimeout(timerId);
+    };
   }, [searchParams]);
 
   const filtered = leads.filter((l) => {

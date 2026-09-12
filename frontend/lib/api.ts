@@ -262,17 +262,22 @@ export async function getTaskById(taskId: string): Promise<ScrapingTask | null> 
 }
 
 export async function getTaskProgress(taskId: string): Promise<ScrapingProgress> {
-  const task = await getTaskById(taskId);
-  if (task) {
-    return {
-      ...mockProgressData,
-      taskId: task.id,
-      location: task.location,
-      keyword: task.keyword,
-      status: task.status,
-    };
+  try {
+    const data = await requestApi(`/api/tasks/${taskId}/progress`);
+    return data;
+  } catch (err) {
+    const task = await getTaskById(taskId);
+    if (task) {
+      return {
+        ...mockProgressData,
+        taskId: task.id,
+        location: task.location,
+        keyword: task.keyword,
+        status: task.status,
+      };
+    }
+    return mockProgressData;
   }
-  return mockProgressData;
 }
 
 export async function getLeads(filters?: {
