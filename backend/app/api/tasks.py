@@ -135,3 +135,13 @@ def get_task_leads(task_id: str, db: Session = Depends(get_db)):
     from app.api.leads import format_lead_response
     return [format_lead_response(l) for l in leads]
 
+@router.get("/{task_id}/export/csv")
+def export_task_csv(task_id: str, db: Session = Depends(get_db)):
+    from app.api.exports import build_csv_export_response
+    return build_csv_export_response(db, task_id)
+
+@router.get("/{task_id}/export/excel")
+def export_task_excel(task_id: str, db: Session = Depends(get_db)):
+    from app.api.exports import build_excel_export_response
+    return build_excel_export_response(db, task_id)
+

@@ -297,6 +297,121 @@ def seed_initial_history_if_needed(db: Session):
         db.add_all([rec1, rec2, rec3])
         db.commit()
 
+from app.models.lead import LeadModel
+from app.models.task import ScrapingTaskModel
+from fastapi import Query
+
+def fetch_leads_for_export(db: Session, task_id: Optional[str] = None) -> List[dict]:
+    query = db.query(LeadModel)
+    if task_id:
+        query = query.filter(LeadModel.task_id == task_id)
+    db_leads = query.all()
+
+    if not db_leads and not task_id:
+        return DEFAULT_LEADS
+
+    formatted_leads = []
+    for l in db_leads:
+        formatted_leads.append({
+            "id": l.id,
+            "organization_name": l.organization_name,
+            "category": l.category,
+            "city": l.city,
+            "state": l.state,
+            "location": l.location or l.address,
+            "phone": l.phone,
+            "email": l.email,
+            "website": l.website,
+            "confidence": l.confidence,
+            "sources_count": len(l.sources) if l.sources else 1,
+        })
+
+    return formatted_leads
+
+def build_csv_export_response(db: Session, task_id: Optional[str] = None) -> Response:
+    if task_id:
+        task = db.query(ScrapingTaskModel).filter(ScrapingTaskModel.id == task_id).first()
+        if not task and db.query(LeadModel).filter(LeadModel.task_id == task_id).count() == 0:
+            raise HTTPException(status_code=404, detail=f"Scraping task {task_id} not found.")
+        task_title = f"{task.keyword if task else 'Task'} in {task.location if task else 'Target'} ({task_id})"
+    else:
+        task_title = "All Discovered Leads"
+
+    leads = fetch_leads_for_export(db, task_id)
+    csv_bytes = generate_csv_bytes(leads)
+    
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"leads_export_{task_id or 'all'}_{timestamp_str}.csv"
+    file_path = os.path.join(EXPORTS_DIR, file_name)
+
+    with open(file_path, "wb") as f:
+        f.write(csv_bytes)
+
+    now_str = datetime.now().strftime("%d %b %Y, %I:%M %p")
+    exp_id = f"EXP-{uuid.uuid4().hex[:6].upper()}"
+    rec = ExportRecord(
+        id=exp_id,
+        file_name=file_name,
+        task_title=task_title,
+        format="CSV",
+        rows=len(leads),
+        file_path=file_path,
+        created_at=now_str
+    )
+    db.add(rec)
+    db.commit()
+
+    return Response(
+        content=csv_bytes,
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{file_name}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        }
+    )
+
+def build_excel_export_response(db: Session, task_id: Optional[str] = None) -> Response:
+    if task_id:
+        task = db.query(ScrapingTaskModel).filter(ScrapingTaskModel.id == task_id).first()
+        if not task and db.query(LeadModel).filter(LeadModel.task_id == task_id).count() == 0:
+            raise HTTPException(status_code=404, detail=f"Scraping task {task_id} not found.")
+        task_title = f"{task.keyword if task else 'Task'} in {task.location if task else 'Target'} ({task_id})"
+    else:
+        task_title = "All Discovered Leads"
+
+    leads = fetch_leads_for_export(db, task_id)
+    excel_bytes = generate_excel_bytes(leads)
+
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"leads_export_{task_id or 'all'}_{timestamp_str}.xlsx"
+    file_path = os.path.join(EXPORTS_DIR, file_name)
+
+    with open(file_path, "wb") as f:
+        f.write(excel_bytes)
+
+    now_str = datetime.now().strftime("%d %b %Y, %I:%M %p")
+    exp_id = f"EXP-{uuid.uuid4().hex[:6].upper()}"
+    rec = ExportRecord(
+        id=exp_id,
+        file_name=file_name,
+        task_title=task_title,
+        format="EXCEL",
+        rows=len(leads),
+        file_path=file_path,
+        created_at=now_str
+    )
+    db.add(rec)
+    db.commit()
+
+    return Response(
+        content=excel_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{file_name}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        }
+    )
+
 @router.get("/history", response_model=List[ExportHistoryResponse])
 def get_export_history(db: Session = Depends(get_db)):
     records = db.query(ExportRecord).order_by(ExportRecord.id.desc()).all()
@@ -313,82 +428,18 @@ def get_export_history(db: Session = Depends(get_db)):
     return result
 
 @router.get("/csv")
-@router.get("/tasks/{task_id}/export/csv")
-def export_csv(task_id: Optional[str] = None, db: Session = Depends(get_db)):
-    leads = DEFAULT_LEADS
-    task_title = "All Discovered Leads" if not task_id else f"Scraping Task {task_id}"
-    
-    csv_data = generate_csv_bytes(leads)
-    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"leads_export_{task_id or 'all'}_{timestamp_str}.csv"
-    file_path = os.path.join(EXPORTS_DIR, file_name)
-
-    # Save to disk
-    with open(file_path, "wb") as f:
-        f.write(csv_data)
-
-    # Record in history
-    now_str = datetime.now().strftime("%d %b %Y, %I:%M %p")
-    exp_id = f"EXP-{uuid.uuid4().hex[:6].upper()}"
-    rec = ExportRecord(
-        id=exp_id,
-        file_name=file_name,
-        task_title=task_title,
-        format="CSV",
-        rows=len(leads),
-        file_path=file_path,
-        created_at=now_str
-    )
-    db.add(rec)
-    db.commit()
-
-    return Response(
-        content=csv_data,
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{file_name}"',
-            "Access-Control-Expose-Headers": "Content-Disposition",
-        }
-    )
+def export_csv(
+    task_id: Optional[str] = Query(None, alias="taskId"),
+    db: Session = Depends(get_db)
+):
+    return build_csv_export_response(db, task_id)
 
 @router.get("/excel")
-@router.get("/tasks/{task_id}/export/excel")
-def export_excel(task_id: Optional[str] = None, db: Session = Depends(get_db)):
-    leads = DEFAULT_LEADS
-    task_title = "All Discovered Leads" if not task_id else f"Scraping Task {task_id}"
-
-    excel_data = generate_excel_bytes(leads)
-    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"leads_export_{task_id or 'all'}_{timestamp_str}.xlsx"
-    file_path = os.path.join(EXPORTS_DIR, file_name)
-
-    # Save to disk
-    with open(file_path, "wb") as f:
-        f.write(excel_data)
-
-    # Record in history
-    now_str = datetime.now().strftime("%d %b %Y, %I:%M %p")
-    exp_id = f"EXP-{uuid.uuid4().hex[:6].upper()}"
-    rec = ExportRecord(
-        id=exp_id,
-        file_name=file_name,
-        task_title=task_title,
-        format="EXCEL",
-        rows=len(leads),
-        file_path=file_path,
-        created_at=now_str
-    )
-    db.add(rec)
-    db.commit()
-
-    return Response(
-        content=excel_data,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={
-            "Content-Disposition": f'attachment; filename="{file_name}"',
-            "Access-Control-Expose-Headers": "Content-Disposition",
-        }
-    )
+def export_excel(
+    task_id: Optional[str] = Query(None, alias="taskId"),
+    db: Session = Depends(get_db)
+):
+    return build_excel_export_response(db, task_id)
 
 @router.get("/download/{export_id}")
 def download_export_by_id(export_id: str, db: Session = Depends(get_db)):
