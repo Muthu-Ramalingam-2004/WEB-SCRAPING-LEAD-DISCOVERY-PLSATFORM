@@ -9,8 +9,34 @@ import { ScrapingTask, Lead, ScrapingProgress, ExportHistoryItem, DataFieldKey }
  * Structured for smooth transition to FastAPI REST API endpoints.
  */
 
-// Centralized API configuration for future backend integration
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+// Centralized API configuration — the NEXT_PUBLIC_API_URL env var is baked into
+// the JS bundle at build time by Next.js. On Vercel it must be set to the
+// deployed Render backend URL; locally it comes from .env.local.
+const _rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
+
+// Guard: detect misconfigured production builds where NEXT_PUBLIC_API_URL is
+// missing or empty.  In production the frontend MUST know the backend origin;
+// a blank value causes every API call to hit the Vercel frontend itself
+// (returning 404 HTML) and surface a misleading connection error.
+if (!_rawApiUrl && typeof window !== 'undefined') {
+  if (
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    console.error(
+      '[API CONFIG ERROR] NEXT_PUBLIC_API_URL is not set. ' +
+        'All API calls will fail. Set this environment variable on Vercel ' +
+        'to your Render backend URL (e.g. https://your-app.onrender.com).'
+    );
+  } else {
+    console.warn(
+      '[API CONFIG] NEXT_PUBLIC_API_URL is empty — API calls will use ' +
+        'relative URLs. Set it in .env.local for local development.'
+    );
+  }
+}
+
+export const API_BASE_URL = _rawApiUrl;
 
 export interface UserCreatePayload {
   email: string;
@@ -76,9 +102,10 @@ export function extractErrorMessage(errData: any): string {
 
 /**
  * Centralized fetch helper with timeout protection.
- * Includes a 12-second timeout to prevent hanging on slow/cold-starting backend or DB.
+ * Includes a 20-second timeout to accommodate Render free-tier cold starts
+ * (which can take 15+ seconds) while still preventing indefinite hangs.
  */
-const REQUEST_TIMEOUT_MS = 12000;
+const REQUEST_TIMEOUT_MS = 20000;
 
 function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
   const controller = new AbortController();
@@ -116,9 +143,16 @@ export async function requestApi(path: string, options: { method?: string; body?
   let response: Response | null = null;
   try {
     response = await fetchWithTimeout(primaryUrl, fetchOptions);
-  } catch (err) {
-    // If primary request fails, surface a generic connection error
-    throw new Error('Unable to connect to backend server.');
+  } catch (err: any) {
+    // Differentiate timeout from actual network failures for better UX
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(
+        'Request timed out — the backend may be starting up. Please try again in a moment.'
+      );
+    }
+    throw new Error(
+      'Unable to connect to backend server. Please check your internet connection and try again.'
+    );
   }
 
   if (!response) {
@@ -304,9 +338,15 @@ export async function triggerFileDownload(url: string, fallbackFileName: string)
   let response: Response;
   try {
     response = await fetch(cleanUrl, { headers });
-  } catch (err) {
-    // If download fails, surface a generic connection error
-    throw new Error('Unable to connect to backend server.');
+  } catch (err: any) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(
+        'Download timed out — the backend may be starting up. Please try again in a moment.'
+      );
+    }
+    throw new Error(
+      'Unable to connect to backend server. Please check your internet connection and try again.'
+    );
   }
 
   if (!response.ok) {
